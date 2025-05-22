@@ -62,7 +62,8 @@
   <div class="section">
     <h2>Crack JWT Secret</h2>
     <label for="jwtInput">Paste JWT:</label>
-    <textarea id="jwtInput" rows="4"></textarea>
+    <!-- CHANGED: added `oninput="autoDecodeJWT()"` for live decode -->
+    <textarea id="jwtInput" rows="4" oninput="autoDecodeJWT()"></textarea>
 
     <label for="wordlistInput">Upload Wordlist (.txt):</label>
     <input type="file" id="wordlistInput" accept=".txt">
@@ -73,17 +74,20 @@
 
   <div class="section">
     <h2>Decode & Edit JWT</h2>
-    <button onclick="decodeJWT()">Decode JWT</button>
+    <!-- REMOVED manual decode button — now done automatically -->
+
     <label for="decodedHeader">Header (JSON):</label>
-    <textarea id="decodedHeader" rows="5"></textarea>
+    <!-- CHANGED: live update when user edits -->
+    <textarea id="decodedHeader" rows="5" oninput="updateJWTFromEdits()"></textarea>
 
     <label for="decodedPayload">Payload (JSON):</label>
-    <textarea id="decodedPayload" rows="10"></textarea>
+    <!-- CHANGED: live update when user edits -->
+    <textarea id="decodedPayload" rows="10" oninput="updateJWTFromEdits()"></textarea>
 
-    <label for="editSecret">Secret Key:</label>
-    <input type="text" id="editSecret">
+    <label for="editSecret">Optional Secret Key (to sign):</label>
+    <!-- CHANGED: also triggers re-sign -->
+    <input type="text" id="editSecret" oninput="updateJWTFromEdits()">
 
-    <button onclick="encodeEditedJWT()">Encode JWT</button>
     <p id="encodedResult"></p>
   </div>
 
