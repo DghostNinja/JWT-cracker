@@ -153,7 +153,7 @@
     function readWordlist(file, callback) {
       const reader = new FileReader();
       reader.onload = () => {
-        const words = reader.result.split(/\r?\n/).filter(w => w.trim() !== '');
+        const words = reader.result.split(/\r?\n/).map(w => w.trim()).filter(w => !!w);
         callback(words);
       };
       reader.readAsText(file);
@@ -243,9 +243,10 @@
             return;
           }
 
-          const secret = wordlist[index];
+          const secret = wordlist[index].trim();
           const hmac = algoFn(data, secret);
-          const hash = CryptoJS.enc.Base64url.stringify(hmac);
+          const hash = CryptoJS.enc.Base64.stringify(hmac)
+            .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
           const percent = Math.floor(((index + 1) / total) * 100);
 
           progressBar.value = percent;
@@ -288,7 +289,8 @@
             return;
           }
           const hmac = algoFn(data, secret);
-          const signature = CryptoJS.enc.Base64url.stringify(hmac);
+          const signature = CryptoJS.enc.Base64.stringify(hmac)
+            .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
           fullJWT += `.${signature}`;
         }
 
