@@ -1,0 +1,13 @@
+<h2>Decode & Edit JWT</h2>
+
+<label for="decodedHeader">Header (JSON):</label>
+<textarea id="decodedHeader" rows="5" cols="80"></textarea>
+
+<label for="decodedPayload">Payload (JSON):</label>
+<textarea id="decodedPayload" rows="10" cols="80"></textarea>
+
+<label for="editSecret">Secret Key:</label>
+<input type="text" id="editSecret">
+
+<button onclick="encodeEditedJWT()">Encode JWT</button>
+<p id="encodedResult"></p>
