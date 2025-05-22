@@ -54,6 +54,14 @@
     .error {
       color: red;
     }
+    #progressContainer {
+      display: none;
+      margin-top: 10px;
+    }
+    progress {
+      width: 100%;
+      height: 20px;
+    }
   </style>
 </head>
 <body>
@@ -68,6 +76,12 @@
     <input type="file" id="wordlistInput" accept=".txt">
 
     <button onclick="crackJWT()">Crack JWT</button>
+
+    <div id="progressContainer">
+      <progress id="progressBar" value="0" max="100"></progress>
+      <div id="progressPercent">0%</div>
+    </div>
+
     <p id="result"></p>
   </div>
 
@@ -126,13 +140,20 @@
       const jwt = document.getElementById('jwtInput').value.trim();
       const wordlistFile = document.getElementById('wordlistInput').files[0];
       const resultDisplay = document.getElementById('result');
+      const progressBar = document.getElementById('progressBar');
+      const progressText = document.getElementById('progressPercent');
+      const progressContainer = document.getElementById('progressContainer');
 
       resultDisplay.className = '';
       resultDisplay.textContent = '';
+      progressBar.value = 0;
+      progressText.textContent = '0%';
+      progressContainer.style.display = 'block';
 
       if (!jwt || !wordlistFile) {
         resultDisplay.textContent = 'Please input JWT and upload a wordlist.';
         resultDisplay.className = 'error';
+        progressContainer.style.display = 'none';
         return;
       }
 
@@ -140,6 +161,7 @@
       if (parts.length !== 3) {
         resultDisplay.textContent = 'Invalid JWT format.';
         resultDisplay.className = 'error';
+        progressContainer.style.display = 'none';
         return;
       }
 
@@ -148,11 +170,13 @@
         if (headerJson.alg !== 'HS256') {
           resultDisplay.textContent = `Unsupported algorithm (${headerJson.alg}). Only HS256 is supported.`;
           resultDisplay.className = 'error';
+          progressContainer.style.display = 'none';
           return;
         }
       } catch (e) {
         resultDisplay.textContent = 'Invalid JWT header.';
         resultDisplay.className = 'error';
+        progressContainer.style.display = 'none';
         return;
       }
 
@@ -160,17 +184,37 @@
       const signature = parts[2];
 
       readWordlist(wordlistFile, wordlist => {
-        for (let secret of wordlist) {
+        let found = false;
+        const total = wordlist.length;
+
+        function tryNext(index) {
+          if (index >= total) {
+            resultDisplay.textContent = 'Secret not found in wordlist.';
+            resultDisplay.className = 'error';
+            progressContainer.style.display = 'none';
+            return;
+          }
+
+          const secret = wordlist[index];
           const hmac = CryptoJS.HmacSHA256(data, secret);
           const hash = CryptoJS.enc.Base64url.stringify(hmac);
+          const percent = Math.floor(((index + 1) / total) * 100);
+
+          progressBar.value = percent;
+          progressText.textContent = `${percent}%`;
+
           if (hash === signature) {
             resultDisplay.textContent = `Secret found: ${secret}`;
             resultDisplay.className = 'success';
+            progressContainer.style.display = 'none';
             return;
           }
+
+          // Non-blocking loop
+          setTimeout(() => tryNext(index + 1), 5);
         }
-        resultDisplay.textContent = 'Secret not found in wordlist.';
-        resultDisplay.className = 'error';
+
+        tryNext(0);
       });
     }
 
