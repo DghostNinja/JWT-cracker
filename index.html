@@ -245,10 +245,13 @@
 
           const secret = wordlist[index].trim();
           const hmac = algoFn(data, secret);
-          const hash = CryptoJS.enc.Base64.stringify(hmac)
+          const hash = CryptoJS.enc.Base64.parse(hmac.toString(CryptoJS.enc.Hex))
+            .toString(CryptoJS.enc.Base64)
             .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-          const percent = Math.floor(((index + 1) / total) * 100);
 
+          console.log(`Trying "${secret}" → ${hash}`);
+
+          const percent = Math.floor(((index + 1) / total) * 100);
           progressBar.value = percent;
           progressText.textContent = `${percent}%`;
 
@@ -289,7 +292,8 @@
             return;
           }
           const hmac = algoFn(data, secret);
-          const signature = CryptoJS.enc.Base64.stringify(hmac)
+          const signature = CryptoJS.enc.Base64.parse(hmac.toString(CryptoJS.enc.Hex))
+            .toString(CryptoJS.enc.Base64)
             .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
           fullJWT += `.${signature}`;
         }
